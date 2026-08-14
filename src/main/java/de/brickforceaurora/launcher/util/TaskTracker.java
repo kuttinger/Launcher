@@ -7,7 +7,7 @@ import de.brickforceaurora.launcher.animation.property.PropString;
 
 public class TaskTracker {
 
-    public static class Task {
+    public static class Task implements AutoCloseable {
 
         private final TaskTracker tracker;
 
@@ -39,6 +39,10 @@ public class TaskTracker {
         public String task() {
             return task;
         }
+        
+        public int availableWork() {
+            return allocatedWork - currentWork;
+        }
 
         public void work(final int work) {
             if (work <= 0) {
@@ -56,6 +60,11 @@ public class TaskTracker {
                 return;
             }
             work(allocatedWork - currentWork);
+        }
+        
+        @Override
+        public void close() {
+            done();
         }
 
     }

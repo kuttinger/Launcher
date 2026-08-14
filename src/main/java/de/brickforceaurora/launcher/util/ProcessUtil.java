@@ -2,6 +2,7 @@ package de.brickforceaurora.launcher.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import de.brickforceaurora.launcher.LauncherApp;
 
@@ -14,8 +15,16 @@ public final class ProcessUtil {
     }
 
     public static ProgramResult runAndRead(String[] command) {
+        return runAndRead(null, command);
+    }
+
+    public static ProgramResult runAndRead(Path directory, String[] command) {
         try {
-            final Process process = new ProcessBuilder(command).start();
+            final ProcessBuilder builder = new ProcessBuilder(command);
+            if (directory != null) {
+                builder.directory(directory.toAbsolutePath().toFile());
+            }
+            final Process process = builder.start();
             BufferedReader inputReader = process.inputReader(), errorReader = process.inputReader();
             int cycles = 100;
             StringBuilder resultBuilder = new StringBuilder(), errorBuilder = new StringBuilder();

@@ -1,4 +1,5 @@
 {
 	"version": "${project.version}",
-	"url": "https://brickforce-aurora.de/download/updates/BrickForceAurora-Update-${project.version}.exe"
+	"url": "https://brickforce-aurora.de/download/updates/BrickForceAurora-Update-${project.version}.exe",
+	"jar-url": "https://brickforce-aurora.de/download/standalone/launcher-${project.version}.jar"
 }

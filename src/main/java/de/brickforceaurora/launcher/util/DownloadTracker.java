@@ -1,13 +1,12 @@
-package de.brickforceaurora.launcher.updater;
+package de.brickforceaurora.launcher.util;
 
 import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
 
-import de.brickforceaurora.launcher.util.Metrics;
 import de.brickforceaurora.launcher.util.TaskTracker.Task;
 import me.lauriichan.snowframe.util.http.IHttpProgressListener;
 
-public class UpdateDownloadListener implements IHttpProgressListener {
+public class DownloadTracker implements IHttpProgressListener {
 
     private static final DecimalFormat FORMAT = new DecimalFormat("0.00");
 
@@ -19,7 +18,7 @@ public class UpdateDownloadListener implements IHttpProgressListener {
     private volatile int currentWork, allocatedWork;
     private volatile int lastCurrent = 0;
 
-    public UpdateDownloadListener(final Task task, final int totalWork) {
+    public DownloadTracker(final Task task, final int totalWork) {
         this.task = task;
         this.taskName = task.task();
         this.totalWork = totalWork;

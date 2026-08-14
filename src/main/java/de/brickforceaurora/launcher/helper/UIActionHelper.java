@@ -28,6 +28,24 @@ public final class UIActionHelper {
         if (userInterface.mainProgress.get() != 1f) {
             return;
         }
+        if (app.platform().needsPlatformSetup()) {
+            userInterface.mainText.set("Launching platform setup...");
+            userInterface.mainProgress.set(0f);
+            try {
+                if (!app.platform().doPlatformSetup(userInterface.mainText, userInterface.mainProgress)) {
+                    userInterface.mainProgress.set(1f);
+                    return;
+                }
+            } catch (Exception e) {
+                LauncherApp.LOGGER.error("Failed to do platform setup", e);
+                userInterface.mainText.set("Failed to do platform setup, please try again (%s)".formatted(GameData.GAME_VERSION.value()));
+                userInterface.mainProgress.set(1);
+                return;
+            }
+            // Do when done
+            userInterface.mainText.set("Ready to play (%s)".formatted(GameData.GAME_VERSION.value()));
+            userInterface.mainProgress.set(1);
+        }
         app.platform().startGame();
     }
 
@@ -51,12 +69,6 @@ public final class UIActionHelper {
             userInterface.mainProgress.set(1);
             return;
         }
-
-        /*
-        if (currentVersion == null) {
-            app.platform().doPlatformSetup(userInterface.mainText, userInterface.mainProgress);
-        }
-        */
 
         userInterface.mainText.set("Checking for game updates...");
         userInterface.mainProgress.set(0.05f);

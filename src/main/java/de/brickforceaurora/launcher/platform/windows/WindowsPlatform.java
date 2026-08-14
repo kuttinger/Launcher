@@ -2,18 +2,16 @@ package de.brickforceaurora.launcher.platform.windows;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 import de.brickforceaurora.launcher.LauncherApp;
 import de.brickforceaurora.launcher.Main;
-import de.brickforceaurora.launcher.animation.property.PropFloat;
-import de.brickforceaurora.launcher.animation.property.PropString;
 import de.brickforceaurora.launcher.config.UpdaterConfig;
 import de.brickforceaurora.launcher.platform.Platform;
-import de.brickforceaurora.launcher.platform.windows.update.LauncherUpdater;
+import de.brickforceaurora.launcher.platform.windows.update.WinLauncherUpdater;
 import de.brickforceaurora.launcher.ui.UserInterface;
 import de.brickforceaurora.launcher.updater.UpdateManager;
 import de.brickforceaurora.launcher.util.TaskTracker;
+import me.lauriichan.laylib.command.Actor;
 import me.lauriichan.laylib.logger.ISimpleLogger;
 import me.lauriichan.snowframe.ConfigModule;
 import me.lauriichan.snowframe.util.Version;
@@ -29,18 +27,15 @@ public class WindowsPlatform extends Platform {
     }
 
     @Override
-    public Path resolveGameDir(Path path) {
-        return path;
-    }
-
-    @Override
-    public void applyLanguageFix() {
+    public void applyLanguageFix(Actor<?> actor) {
         WindowsHelper.applyRegistryLanguageFix();
+        actor.sendMessage("Applied registry language fix.");
     }
 
     @Override
-    public void applyWindowedFix() {
+    public void applyWindowedFix(Actor<?> actor) {
         WindowsHelper.applyWindowedFix();
+        actor.sendMessage("Applied registry windowed fix.");
     }
 
     @Override
@@ -54,7 +49,7 @@ public class WindowsPlatform extends Platform {
         userInterface.mainText.set("Checking for launcher updates...");
         userInterface.mainProgress.set(0.00f);
 
-        final UpdateManager updateManager = new UpdateManager(app.snowFrame().logger(), new LauncherUpdater());
+        final UpdateManager updateManager = new UpdateManager(app.snowFrame().logger(), new WinLauncherUpdater());
         try {
             Files.deleteIfExists(app.appDirectory().resolve("BrickForceAurora-Update-%s.exe".formatted(Main.version().toString())));
         } catch (final IOException _) {
@@ -93,8 +88,5 @@ public class WindowsPlatform extends Platform {
             logger.error("Failed to launch game", e);
         }
     }
-    
-    @Override
-    public void doPlatformSetup(PropString mainText, PropFloat mainProgress) {}
 
 }

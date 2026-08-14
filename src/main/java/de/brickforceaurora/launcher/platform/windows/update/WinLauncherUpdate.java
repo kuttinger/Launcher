@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import de.brickforceaurora.launcher.updater.IUpdate;
-import de.brickforceaurora.launcher.updater.UpdateDownloadListener;
+import de.brickforceaurora.launcher.util.DownloadTracker;
 import de.brickforceaurora.launcher.util.TaskTracker.Task;
 import me.lauriichan.laylib.logger.ISimpleLogger;
 import me.lauriichan.snowframe.util.Version;
@@ -15,7 +15,7 @@ import me.lauriichan.snowframe.util.http.HttpRequest;
 import me.lauriichan.snowframe.util.http.HttpResponse;
 import me.lauriichan.snowframe.util.http.type.HttpContentType;
 
-public record LauncherUpdate(Version version, String url) implements IUpdate {
+public record WinLauncherUpdate(Version version, String url) implements IUpdate {
 
     @Override
     public void applyUpdate(final ISimpleLogger logger, final Task task, final Path updateTargetDir, final Path tempDirectory)
@@ -23,7 +23,7 @@ public record LauncherUpdate(Version version, String url) implements IUpdate {
         task.task("Downloading launcher update");
         final String[] parts = url.split("/");
         final String fileName = parts[parts.length - 1];
-        final HttpResponse<byte[]> request = new HttpRequest().url(url).downloadListener(new UpdateDownloadListener(task, 50))
+        final HttpResponse<byte[]> request = new HttpRequest().url(url).downloadListener(new DownloadTracker(task, 50))
             .readTimeout(10000).call(HttpContentType.BINARY);
         if (request.code() != HttpCode.OK || request.data().isError()) {
             throw new IllegalStateException();

@@ -1,6 +1,8 @@
 package de.brickforceaurora.launcher;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,6 +17,17 @@ public final class Main {
 
     private Main() {
         throw new UnsupportedOperationException();
+    }
+
+    public static final String JAR_FILE_NAME;
+
+    static {
+        String jarName = null;
+        try {
+            jarName = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getName();
+        } catch (URISyntaxException _) {
+        }
+        JAR_FILE_NAME = jarName;
     }
 
     private static final AtomicBoolean SHUT_DOWN = new AtomicBoolean(false);

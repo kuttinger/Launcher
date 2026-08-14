@@ -9,9 +9,9 @@ import java.util.zip.ZipInputStream;
 
 import de.brickforceaurora.launcher.config.UpdaterConfig;
 import de.brickforceaurora.launcher.updater.IUpdate;
-import de.brickforceaurora.launcher.updater.UpdateDownloadListener;
 import de.brickforceaurora.launcher.updater.shiningstar.command.api.IncompleteInstructionException;
 import de.brickforceaurora.launcher.updater.shiningstar.command.api.UpdateActor;
+import de.brickforceaurora.launcher.util.DownloadTracker;
 import de.brickforceaurora.launcher.util.SubWorker;
 import de.brickforceaurora.launcher.util.TaskTracker.Task;
 import it.unimi.dsi.fastutil.io.FastByteArrayInputStream;
@@ -47,7 +47,7 @@ public final class ShiningStarUpdate implements IUpdate {
     public void applyUpdate(ISimpleLogger logger, Task task, Path updateTargetDir, Path tempDirectory) throws IOException {
         task.task("Downloading update");
         HttpResponse<MultiFormData> response = new HttpRequest().url(config.shiningStarUrl("update/bundle")).param("product_id", productId)
-            .param("current", current).param("target", target).downloadListener(new UpdateDownloadListener(task, 50))
+            .param("current", current).param("target", target).downloadListener(new DownloadTracker(task, 50))
             .call(HttpContentType.multiFormData(HttpContentType.TEXT.restrict("bfaurora/update-instructions"),
                 HttpContentType.BINARY.restrict("application/zip")));
         if (response.code() != HttpCode.OK) {

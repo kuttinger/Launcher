@@ -10,7 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import de.brickforceaurora.launcher.updater.IUpdate;
-import de.brickforceaurora.launcher.updater.UpdateDownloadListener;
+import de.brickforceaurora.launcher.util.DownloadTracker;
 import de.brickforceaurora.launcher.util.IOUtil;
 import de.brickforceaurora.launcher.util.SubWorker;
 import de.brickforceaurora.launcher.util.TaskTracker.Task;
@@ -42,7 +42,7 @@ final class GithubUpdate implements IUpdate {
         throws IOException {
         task.task("Downloading update");
         final HttpResponse<byte[]> response = GithubUpdater.callGithub(new HttpRequest().url(url).authenticator(authenticator)
-            .readTimeout(2500).downloadListener(new UpdateDownloadListener(task, 50)), HttpContentType.BINARY);
+            .readTimeout(2500).downloadListener(new DownloadTracker(task, 50)), HttpContentType.BINARY);
         if (response == null || response.code() != HttpCode.OK) {
             throw new IOException("Couldn't download update");
         }

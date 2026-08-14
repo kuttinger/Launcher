@@ -1,13 +1,12 @@
 package de.brickforceaurora.launcher.platform;
 
-import java.nio.file.Path;
-
 import de.brickforceaurora.launcher.CondConstant;
 import de.brickforceaurora.launcher.LauncherApp;
 import de.brickforceaurora.launcher.animation.property.PropFloat;
 import de.brickforceaurora.launcher.animation.property.PropString;
 import de.brickforceaurora.launcher.platform.linux.LinuxPlatform;
 import de.brickforceaurora.launcher.platform.windows.WindowsPlatform;
+import me.lauriichan.laylib.command.Actor;
 
 public abstract class Platform {
     
@@ -21,14 +20,18 @@ public abstract class Platform {
             throw new IllegalStateException("Unsupported OS");
         }
     }
+    
+    public boolean needsPlatformSetup() {
+        return false;
+    }
 
-    public abstract Path resolveGameDir(Path path);
+    public boolean doPlatformSetup(PropString mainText, PropFloat mainProgress) throws Exception {
+        return true;
+    }
 
-    public void doPlatformSetup(PropString mainText, PropFloat mainProgress) {};
+    public abstract void applyLanguageFix(Actor<?> actor);
 
-    public abstract void applyLanguageFix();
-
-    public abstract void applyWindowedFix();
+    public abstract void applyWindowedFix(Actor<?> actor);
 
     public abstract boolean updateLauncher();
 

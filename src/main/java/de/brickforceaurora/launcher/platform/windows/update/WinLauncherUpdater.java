@@ -15,7 +15,7 @@ import me.lauriichan.snowframe.util.http.HttpRequest;
 import me.lauriichan.snowframe.util.http.HttpResponse;
 import me.lauriichan.snowframe.util.http.type.HttpContentType;
 
-public class LauncherUpdater implements IUpdater {
+public class WinLauncherUpdater implements IUpdater {
 
     private static final String LAUNCHER_RELEASE = "https://brickforce-aurora.de/download/latest_launcher.json";
 
@@ -32,7 +32,7 @@ public class LauncherUpdater implements IUpdater {
         if (current.compareTo(version) >= 0) {
             return;
         }
-        updates.add(new LauncherUpdate(version, url));
+        updates.add(new WinLauncherUpdate(version, url));
     }
     
     @Override
