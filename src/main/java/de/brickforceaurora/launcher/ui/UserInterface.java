@@ -69,8 +69,6 @@ public class UserInterface extends AbstractUserInterface {
     public final PropString newVersionText = new PropString("");
     public final PropFloat mainProgress = new PropFloat(0f);
     public final PropString mainText = new PropString("");
-    
-    public final PropString launcherUpdateText = new PropString("");
 
     private final Button startButton = Button.builder().action(UIActionHelper::startGame).padding(Padding.builder().all(4).left(8).build()).build();
     private final Button updateButton = Button.builder().width(ISizing.percentage(0.185f)).padding(NO_PADDING)
@@ -195,7 +193,7 @@ public class UserInterface extends AbstractUserInterface {
                 try (Element rightBar = builder.elementId("titleBar_right").build()) {
                     builder = rightBar.newElement();
                     builder
-                        .layout().height(ISizing.percentage(0.6f)).addConfigs(Text.builder().text("v" + Main.version().toString() + launcherUpdateText.get())
+                        .layout().height(ISizing.percentage(0.6f)).addConfigs(Text.builder().text("v" + Main.version().toString())
                             .fontSize(16).wrapMode(WrapMode.WRAP_NONE).font(FontWrapper.of(FontAtlas.NOTO_SANS_NORMAL)).build())
                         .layoutDirection(LayoutDirection.TOP_TO_BOTTOM);
                     builder.build().close();
