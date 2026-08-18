@@ -46,7 +46,14 @@ public final class UIActionHelper {
             userInterface.mainText.set("Ready to play (%s)".formatted(GameData.GAME_VERSION.value()));
             userInterface.mainProgress.set(1);
         }
-        app.platform().startGame();
+        try {
+            app.platform().startGame();
+        } catch (RuntimeException e) {
+            LauncherApp.LOGGER.error("Failed to start the game", e);
+            userInterface.mainText.set("Failed to start the game, check console for more info (%s)".formatted(GameData.GAME_VERSION.value()));
+            userInterface.mainProgress.set(1);
+            return;
+        }
     }
 
     public static void runUpdate(final boolean startup, final boolean confirmed) {

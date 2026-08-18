@@ -1,9 +1,11 @@
 package de.brickforceaurora.launcher.platform.linux;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
@@ -13,9 +15,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+
+import de.brickforceaurora.launcher.LauncherApp;
 import de.brickforceaurora.launcher.util.IOUtil;
-import de.brickforceaurora.launcher.util.ProcessUtil;
 import de.brickforceaurora.launcher.util.TaskTracker.Task;
 import me.lauriichan.snowframe.util.Version;
 
@@ -166,14 +172,36 @@ public final class LinuxHelper {
         }
     }
 
-    public static boolean extractTarGz(Path filePath, Path targetPath) {
-        return ProcessUtil.runAndRead(new String[] {
-            "tar",
-            "-xzf",
-            filePath.toAbsolutePath().toString(),
-            "-C",
-            targetPath.toAbsolutePath().toString()
-        }).code() == 0;
+    public static boolean extractTar(Path filePath, Path targetPath) {
+        targetPath = targetPath.toAbsolutePath().normalize();
+        try (InputStream input = Files.newInputStream(filePath = filePath.toAbsolutePath())) {
+            String fileName = filePath.getFileName().toString();
+            InputStream finalIn = input;
+            if (fileName.endsWith(".gz") || fileName.endsWith(".tgz")) {
+                finalIn = new GZIPInputStream(input);
+            }
+            try (TarArchiveInputStream archive = new TarArchiveInputStream(finalIn)) {
+                TarArchiveEntry entry;
+                Path resolved;
+                while ((entry = archive.getNextEntry()) != null) {
+                    resolved = targetPath.resolve(entry.getName()).normalize();
+                    if (!resolved.startsWith(targetPath)) {
+                        throw new IOException("File is not inside target folder");
+                    }
+                    if (entry.isDirectory()) {
+                        ensureWritableDirectory(resolved);
+                        continue;
+                    }
+                    ensureWritableDirectory(resolved.getParent());
+                    Files.copy(archive, resolved, StandardCopyOption.REPLACE_EXISTING);
+                    ensureCorrectPermissions(resolved);
+                }
+            }
+        } catch(IOException ie) {
+            LauncherApp.LOGGER.error("Failed to extract tar file '{0}'", ie, filePath);
+            return false;
+        }
+        return true;
     }
 
     public static void ensureWritableDirectory(Path path) throws IOException {
@@ -194,7 +222,8 @@ public final class LinuxHelper {
         } else if (symlink.getParent() != null && !Files.isDirectory(symlink.getParent())) {
             ensureWritableDirectory(symlink.getParent());
         }
-        Files.createSymbolicLink(symlink, target, PosixFilePermissions.asFileAttribute(WRITE_PERMISSIONS));
+        Files.createSymbolicLink(symlink, target);
+        ensureCorrectPermissions(symlink);
     }
 
     public static void applyRegistryLanguageFix(ProtonInstance proton) {

@@ -48,7 +48,7 @@ public class PathSetting extends Setting {
         this.getter = getter;
         this.setter = setter;
         update();
-        this.button = Button.builder().action(this::selectPath).width(ISizing.grow()).padding(new Padding(4, 4, 2, 4)).build()
+        this.button = Button.builder().actionInUI(this::selectPath).width(ISizing.grow()).padding(new Padding(4, 4, 2, 4)).build()
             .setup(renderContext);
     }
 

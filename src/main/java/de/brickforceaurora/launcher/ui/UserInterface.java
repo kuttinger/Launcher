@@ -72,9 +72,9 @@ public class UserInterface extends AbstractUserInterface {
 
     private final Button startButton = Button.builder().action(UIActionHelper::startGame).padding(Padding.builder().all(4).left(8).build()).build();
     private final Button updateButton = Button.builder().width(ISizing.percentage(0.185f)).padding(NO_PADDING)
-        .action(() -> LauncherApp.SCHEDULER.submit(() -> UIActionHelper.runUpdate(false, true))).build();
-    private final Button settingsButton = Button.builder().height(ISizing.grow()).padding(NO_PADDING).action(showSettings::toggle).build();
-    private final Button quitButton = Button.builder().height(ISizing.grow()).padding(NO_PADDING).action(Main::shutdown).build();
+        .action(() -> UIActionHelper.runUpdate(false, true)).build();
+    private final Button settingsButton = Button.builder().height(ISizing.grow()).padding(NO_PADDING).actionInUI(showSettings::toggle).build();
+    private final Button quitButton = Button.builder().height(ISizing.grow()).padding(NO_PADDING).actionInUI(Main::shutdown).build();
 
     private final SettingsInterface settingsInterface = new SettingsInterface(renderContext);
     private final ImGuiConsole console = new ImGuiConsole();

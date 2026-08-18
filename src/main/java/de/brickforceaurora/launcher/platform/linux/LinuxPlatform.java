@@ -69,6 +69,11 @@ public class LinuxPlatform extends Platform {
     }
 
     @Override
+    public boolean needsPlatformSetup() {
+        return true;
+    }
+
+    @Override
     public boolean doPlatformSetup(PropString mainText, PropFloat mainProgress) throws Exception {
         TaskTracker tracker = new TaskTracker(mainText, mainProgress, 1f, 100);
         Path protonPath;
@@ -77,7 +82,7 @@ public class LinuxPlatform extends Platform {
             protonPath = LinuxHelper.findProton(ALLOWED_PROTON, PROTON_PATHS);
             task.work(10);
             if (protonPath == null) {
-                task.task("No proton found, downloading GE-Proton9-27");
+                task.task("Downloading GE-Proton9-27");
                 LinuxHelper.ensureWritableDirectory(PROTON_INSTALL_LOC);
                 LinuxHelper.ensureWritableDirectory(toolsPath);
                 Path protonGePath = toolsPath.resolve("GEProton.tar.gz").toAbsolutePath();
@@ -90,8 +95,9 @@ public class LinuxPlatform extends Platform {
                 try (FileOutputStream outputStream = new FileOutputStream(protonGePath.toFile())) {
                     outputStream.write(response.data().value());
                 }
+                task.task("Extracting GE-Proton9-27");
                 try {
-                    if (!LinuxHelper.extractTarGz(protonGePath, PROTON_INSTALL_LOC)) {
+                    if (!LinuxHelper.extractTar(protonGePath, PROTON_INSTALL_LOC)) {
                         mainText.set("Failed to install GE-Proton9-27, please install it manually.");
                         return false;
                     }
@@ -159,7 +165,7 @@ public class LinuxPlatform extends Platform {
                 }
                 task.task("Creating prefix with dotnet");
                 LinuxHelper.ensureWritableDirectory(winePrefix);
-                if (proton.executeAwait(wineTricksPath, "-q", "dotnet35") != 0) {
+                if (proton.executeAwait(wineTricksPath, "-q", "dotnet35").code() != 0) {
                     mainText.set("Failed to setup proton prefix, please try again.");
                     return false;
                 }
@@ -251,7 +257,11 @@ public class LinuxPlatform extends Platform {
         final String gamePath = linkPath.resolve("BrickForce.exe").toString();
         logger.info("Launching game '{0}'", gamePath);
         try {
-            protonRef.get().execute(linkPath, gamePath);
+            ProtonInstance instance = protonRef.get();
+            if (instance == null) {
+                throw new IllegalStateException("Proton is not set up, how?");
+            }
+            instance.execute(linkPath, gamePath);
         } catch (final IOException e) {
             logger.error("Failed to launch game", e);
         }

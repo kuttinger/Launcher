@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import de.brickforceaurora.launcher.Constant;
+import de.brickforceaurora.launcher.LauncherApp;
 import de.brickforceaurora.launcher.animation.Animation;
 import de.brickforceaurora.launcher.animation.animator.IAnimationAnimator;
 import de.brickforceaurora.launcher.animation.function.IAnimationFunction;
@@ -190,6 +191,12 @@ public class Button {
         }
 
         public Builder action(final Runnable action) {
+            Objects.requireNonNull(action);
+            this.action = () -> LauncherApp.SCHEDULER.submit(() -> action.run());
+            return this;
+        }
+
+        public Builder actionInUI(final Runnable action) {
             this.action = Objects.requireNonNull(action);
             return this;
         }

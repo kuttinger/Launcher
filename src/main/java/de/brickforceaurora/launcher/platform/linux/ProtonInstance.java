@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import de.brickforceaurora.launcher.LauncherApp;
+import de.brickforceaurora.launcher.util.ProcessUtil;
+import de.brickforceaurora.launcher.util.ProcessUtil.ProgramResult;
 
 public final class ProtonInstance {
 
@@ -23,12 +25,12 @@ public final class ProtonInstance {
         return wineTricksPath;
     }
 
-    public int executeAwait(String... arguments) throws IOException, InterruptedException {
+    public ProgramResult executeAwait(String... arguments) throws IOException, InterruptedException {
         return executeAwait(null, arguments);
     }
 
-    public int executeAwait(Path directory, String... arguments) throws IOException, InterruptedException {
-        return execute(directory, arguments).waitFor();
+    public ProgramResult executeAwait(Path directory, String... arguments) throws IOException, InterruptedException {
+        return ProcessUtil.await(createProcess(directory, arguments));
     }
 
     public Process execute(String... arguments) throws IOException {
@@ -36,6 +38,10 @@ public final class ProtonInstance {
     }
 
     public Process execute(Path directory, String... arguments) throws IOException {
+        return createProcess(directory, arguments).start();
+    }
+
+    private ProcessBuilder createProcess(Path directory, String[] arguments) {
         String[] processArgs = new String[arguments.length + 2];
         processArgs[0] = protonPath;
         processArgs[1] = "run";
@@ -48,7 +54,7 @@ public final class ProtonInstance {
         if (directory != null) {
             processBuilder.directory(directory.toAbsolutePath().toFile());
         }
-        return processBuilder.start();
+        return processBuilder;
     }
 
     public void setRegistry(String path, String key, String type, String value) {

@@ -47,8 +47,18 @@ import me.lauriichan.snowframe.util.logger.IDelegateLogger;
 
 public final class LauncherApp implements ISnowFrameApp<LauncherApp> {
 
+    public static final File APP_DIRECTORY = detectAppDirectory();
+
+    private static File detectAppDirectory() {
+        final File dir = new File("").getAbsoluteFile();
+        if ("bin".equals(dir.getName())) {
+            return dir.getParentFile();
+        }
+        return dir;
+    }
+
     public static final LogHistory LOG_HISTORY = new LogHistory();
-    public static final ISimpleLogger LOGGER = new FileLogger(new File("../logs"),
+    public static final ISimpleLogger LOGGER = new FileLogger(new File(APP_DIRECTORY, "logs"),
         IDelegateLogger.combined(new ConsoleDelegateLogger(LOG_HISTORY), Console.INSTANCE));
 
     public static final ScheduledExecutorService SCHEDULER = new ExceptionCatchingExecutorService(
@@ -104,17 +114,10 @@ public final class LauncherApp implements ISnowFrameApp<LauncherApp> {
     @Override
     public void registerLifecycle(final Lifecycle<LauncherApp> lifecycle) {
         lifecycle.startupChain().register("load", Stage.PRE, frame -> {
-            final File dir = new File("").getAbsoluteFile();
-            Path appPath;
-            if ("bin".equals(dir.getName())) {
-                appPath = dir.getParentFile().toPath();
-            } else {
-                appPath = dir.toPath();
-            }
-            this.appDirectory = appPath;
-            frame.resourceManager().register("app", appPath);
-            frame.resourceManager().register("user", appPath.resolve("user"));
-            frame.resourceManager().register("data", appPath.resolve("data"));
+            this.appDirectory = APP_DIRECTORY.toPath();
+            frame.resourceManager().register("app", appDirectory);
+            frame.resourceManager().register("user", appDirectory.resolve("user"));
+            frame.resourceManager().register("data", appDirectory.resolve("data"));
         }).register("ready", Stage.MAIN, frame -> {
             this.platform = Platform.createPlatform();
             UpdaterConfig updaterConfig = frame.module(ConfigModule.class).manager().config(UpdaterConfig.class);

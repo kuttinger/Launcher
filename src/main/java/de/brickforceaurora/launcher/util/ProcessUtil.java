@@ -19,13 +19,32 @@ public final class ProcessUtil {
     }
 
     public static ProgramResult runAndRead(Path directory, String[] command) {
+        final ProcessBuilder builder = new ProcessBuilder(command);
+        if (directory != null) {
+            builder.directory(directory.toAbsolutePath().toFile());
+        }
+        return await(builder);
+    }
+
+    public static ProgramResult await(ProcessBuilder builder) {
+        String commandLine = String.join(" ", builder.command());
         try {
-            final ProcessBuilder builder = new ProcessBuilder(command);
-            if (directory != null) {
-                builder.directory(directory.toAbsolutePath().toFile());
+            return await(commandLine, builder.start());
+        } catch (IOException e) {
+            if (LauncherApp.LOGGER.isDebug()) {
+                LauncherApp.LOGGER.debug("Execution of '{0}' failed", e, commandLine);
             }
-            final Process process = builder.start();
-            BufferedReader inputReader = process.inputReader(), errorReader = process.inputReader();
+            return new ProgramResult(e, -1, "", "");
+        }
+    }
+
+    public static ProgramResult await(Process process) {
+        return await(process.info().commandLine().orElseThrow(), process);
+    }
+
+    private static ProgramResult await(String commandLine, Process process) {
+        try {
+            BufferedReader inputReader = process.inputReader(), errorReader = process.errorReader();
             int cycles = 100;
             StringBuilder resultBuilder = new StringBuilder(), errorBuilder = new StringBuilder();
             while (process.isAlive()) {
@@ -56,17 +75,17 @@ public final class ProcessUtil {
             String result = resultBuilder.toString(), error = errorBuilder.toString();
             if (LauncherApp.LOGGER.isDebug()) {
                 LauncherApp.LOGGER.debug("""
-                    Execution of '{3}' success
-                    ==========================
+                    Execution of '{3}' done
+                    =======================
                     Code: {0}
                     Error: {2}
                     Result: {1}
-                    """, code, result, error, String.join(" ", command));
+                    """, code, result, error, commandLine);
             }
             return new ProgramResult(null, code, result, error);
         } catch (IOException | InterruptedException e) {
             if (LauncherApp.LOGGER.isDebug()) {
-                LauncherApp.LOGGER.debug("Execution of '{0}' failed", e, String.join(" ", command));
+                LauncherApp.LOGGER.debug("Execution of '{0}' failed", e, commandLine);
             }
             return new ProgramResult(e, -1, "", "");
         }
