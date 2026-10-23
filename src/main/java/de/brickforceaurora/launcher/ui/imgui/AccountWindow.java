@@ -103,7 +103,9 @@ public final class AccountWindow {
 
         ImGui.separator();
         ImGui.checkbox("Host a private lobby on this PC", hostLocally);
-        if (!hostLocally.get()) {
+        if (hostLocally.get()) {
+            ImGui.textWrapped("Your server is only reachable from this PC, friends join through Steam. Your IP address stays hidden.");
+        } else {
             ImGui.inputText("Server address", joinHost);
         }
         ImGui.text(localServer.isRunning() ? "Local server: running" : "Local server: stopped");

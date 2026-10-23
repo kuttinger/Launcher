@@ -37,7 +37,8 @@ public final class LocalServer {
      *
      * @throws IOException if the jar is missing or the server didn't come up
      */
-    public synchronized void start(final Path jar, final int port, final String accountUrl, final String name) throws IOException {
+    public synchronized void start(final Path jar, final int port, final String accountUrl, final String name, final boolean publicAccess)
+        throws IOException {
         if (isRunning()) {
             return;
         }
@@ -49,6 +50,8 @@ public final class LocalServer {
         command.add("-jar");
         command.add(jar.toAbsolutePath().toString());
         command.add("--port=" + port);
+        // Only reachable from this pc unless the player explicitly opts in, see AccountConfig server.public_access
+        command.add("--bind=" + (publicAccess ? "0.0.0.0" : "127.0.0.1"));
         command.add("--public-host=127.0.0.1");
         command.add("--name=" + name);
         if (accountUrl != null && !accountUrl.isBlank()) {

@@ -82,7 +82,7 @@ public final class UIActionHelper {
                 if (window.hostLocally()) {
                     userInterface.mainText.set("Starting private lobby server...");
                     app.localServer().start(app.appDirectory().resolve(config.serverJar()), config.serverPort(), config.accountHost(),
-                        config.serverName());
+                        config.serverName(), config.publicAccess());
                     host = "127.0.0.1";
                 } else {
                     host = window.joinHost();

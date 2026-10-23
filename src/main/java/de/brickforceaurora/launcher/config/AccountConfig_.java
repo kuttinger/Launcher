@@ -32,6 +32,12 @@ public class AccountConfig_ implements ISingleConfigExtension {
     @ConfigValue("server.host_locally")
     public boolean hostLocally = true;
     /**
+     * false (default): the hosted server only listens on 127.0.0.1, other players join through the steam relay and never see the
+     * hosts ip address. true: listen on all network interfaces (needs port forwarding / VPN and exposes the ip to joining players).
+     */
+    @ConfigValue("server.public_access")
+    public boolean publicAccess = false;
+    /**
      * Path of the match server jar, relative to the launcher directory
      */
     @ConfigValue("server.jar")
