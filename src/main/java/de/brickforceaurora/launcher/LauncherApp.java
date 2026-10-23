@@ -8,7 +8,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import de.brickforceaurora.launcher.account.AccountSession;
+import de.brickforceaurora.launcher.account.LocalServer;
 import de.brickforceaurora.launcher.command.HelpCommand;
+import de.brickforceaurora.launcher.config.AccountConfig;
+import de.brickforceaurora.launcher.ui.imgui.AccountWindow;
 import de.brickforceaurora.launcher.command.api.ConsoleActor;
 import de.brickforceaurora.launcher.command.api.ICommand;
 import de.brickforceaurora.launcher.config.UpdaterConfig;
@@ -104,6 +108,10 @@ public final class LauncherApp implements ISnowFrameApp<LauncherApp> {
     private DialogManager dialogManager;
     private UserInterface userInterface;
 
+    private final AccountSession accountSession = new AccountSession();
+    private LocalServer localServer;
+    private AccountWindow accountWindow;
+
     @Override
     public void setupConditionMap(IConditionMap conditionMap) {
         conditionMap.value(CondConstant.PROP_IS_LINUX_OS, CondConstant.OS == OSType.LINUX);
@@ -150,8 +158,17 @@ public final class LauncherApp implements ISnowFrameApp<LauncherApp> {
             renderManager = new RenderManager(frame);
 
             signalManager = frame.module(SignalModule.class).signalManager();
+
+            final AccountConfig accountConfig = frame.module(ConfigModule.class).manager().config(AccountConfig.class);
+            accountSession.host(accountConfig.accountHost());
+            localServer = new LocalServer(frame.logger());
+            accountWindow = new AccountWindow(accountSession, localServer, accountConfig.username(), accountConfig.hostLocally(),
+                accountConfig.joinHost());
         });
         lifecycle.shutdownChain().register("shutdown", Stage.MAIN, _ -> {
+            if (localServer != null) {
+                localServer.stop();
+            }
             launcherData.save();
             gameData.save();
         }).register("shutdown", Stage.POST, frame -> {
@@ -238,6 +255,18 @@ public final class LauncherApp implements ISnowFrameApp<LauncherApp> {
 
     public UserInterface userInterface() {
         return userInterface;
+    }
+
+    public AccountSession accountSession() {
+        return accountSession;
+    }
+
+    public LocalServer localServer() {
+        return localServer;
+    }
+
+    public AccountWindow accountWindow() {
+        return accountWindow;
     }
 
     DataStore launcherData() {

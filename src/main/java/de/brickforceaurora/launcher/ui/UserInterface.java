@@ -137,6 +137,9 @@ public class UserInterface extends AbstractUserInterface {
         if (ImGui.isKeyPressed(ImGuiKey.F1, false)) {
             showConsole.set(!showConsole.get());
         }
+        if (ImGui.isKeyPressed(ImGuiKey.F2, false)) {
+            LauncherApp.get().accountWindow().toggle();
+        }
     }
 
     @Override
@@ -356,6 +359,7 @@ public class UserInterface extends AbstractUserInterface {
 
     @Override
     protected void additionalRender(float deltaTime) {
+        LauncherApp.get().accountWindow().render();
         if (showConsole.get()) {
             ImGui.setNextWindowSize(windowSize.x, windowSize.y);
             ImGui.begin("Launcher Console", ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoResize);

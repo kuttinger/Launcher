@@ -6,8 +6,12 @@ import java.nio.file.Path;
 
 import de.brickforceaurora.launcher.GameData;
 import de.brickforceaurora.launcher.LauncherApp;
+import de.brickforceaurora.launcher.account.AccountSession;
+import de.brickforceaurora.launcher.account.AccountSession.AccountException;
+import de.brickforceaurora.launcher.config.AccountConfig;
 import de.brickforceaurora.launcher.config.UpdaterConfig;
 import de.brickforceaurora.launcher.ui.UserInterface;
+import de.brickforceaurora.launcher.ui.imgui.AccountWindow;
 import de.brickforceaurora.launcher.updater.UpdateManager;
 import de.brickforceaurora.launcher.util.TaskTracker;
 import me.lauriichan.snowframe.ConfigModule;
@@ -46,6 +50,9 @@ public final class UIActionHelper {
             userInterface.mainText.set("Ready to play (%s)".formatted(GameData.GAME_VERSION.value()));
             userInterface.mainProgress.set(1);
         }
+        if (!prepareAurora(app, userInterface)) {
+            return;
+        }
         try {
             app.platform().startGame();
         } catch (RuntimeException e) {
@@ -53,6 +60,51 @@ public final class UIActionHelper {
             userInterface.mainText.set("Failed to start the game, check console for more info (%s)".formatted(GameData.GAME_VERSION.value()));
             userInterface.mainProgress.set(1);
             return;
+        }
+    }
+
+    /**
+     * Hands the account ticket and the server to connect to over to the game (via {@code launcher_data.dat}) and starts the local
+     * private lobby server if the player hosts.
+     *
+     * Without login the game starts like before (emulator mode).
+     */
+    private static boolean prepareAurora(final LauncherApp app, final UserInterface userInterface) {
+        final AccountSession session = app.accountSession();
+        final AccountWindow window = app.accountWindow();
+        final AccountConfig config = app.snowFrame().module(ConfigModule.class).manager().config(AccountConfig.class);
+        try {
+            if (!session.isLoggedIn()) {
+                GameData.AURORA_TICKET.value("");
+                GameData.AURORA_SERVER_HOST.value("");
+            } else {
+                final String host;
+                if (window.hostLocally()) {
+                    userInterface.mainText.set("Starting private lobby server...");
+                    app.localServer().start(app.appDirectory().resolve(config.serverJar()), config.serverPort(), config.accountHost(),
+                        config.serverName());
+                    host = "127.0.0.1";
+                } else {
+                    host = window.joinHost();
+                    if (host.isEmpty()) {
+                        window.status("Enter the address of the server you want to join or host a lobby yourself.");
+                        window.show();
+                        return false;
+                    }
+                }
+                GameData.AURORA_TICKET.value(session.createTicket());
+                GameData.AURORA_SERVER_HOST.value(host);
+                GameData.AURORA_SERVER_PORT.value(config.serverPort());
+            }
+            GameData.STORE.save();
+            userInterface.mainText.set("Ready to play (%s)".formatted(GameData.GAME_VERSION.value()));
+            return true;
+        } catch (AccountException | IOException e) {
+            LauncherApp.LOGGER.error("Failed to prepare the game start", e);
+            window.status(e.getMessage());
+            window.show();
+            userInterface.mainText.set("Couldn't start: %s".formatted(e.getMessage()));
+            return false;
         }
     }
 
